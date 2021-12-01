@@ -2,3 +2,4 @@ ape-safe
 pandas
 rich
 tqdm
+brownie-token-tester
