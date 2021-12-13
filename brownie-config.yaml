@@ -1,4 +1,5 @@
 autofetch_sources: True
 
+dotenv: .env
 networks:
   default: mainnet-fork
