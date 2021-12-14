@@ -1,23 +1,31 @@
+from brownie_tokens.forked import MintableForkToken
 import pytest
 from conftest import native, aave, safe
+from scripts.mint import mint
+from brownie import exceptions
+from brownie_tokens.forked import MintableForkToken
 
 
-@pytest.mark.parametrize(
-    "native_asset, aave_asset", zip(native.items(), aave.items()), indirect=True
-)
+@pytest.mark.parametrize("native_asset, aave_asset", zip(native, aave), indirect=True)
 def test_deposits(safe, native_asset, aave_asset):
-    _native_asset = safe.contract(native_asset[1])
-    _aave_asset = safe.contract(aave_asset[1])
+    _native_asset = safe.contract(native[native_asset].upper())
+    _aave_asset = safe.contract(aave[aave_asset].upper())
 
-    print(f"Testing for {native_asset[0]}/{aave_asset[0]}")
     bal_before_native_asset_deposit = _native_asset.balanceOf(safe)
     bal_before_aave_asset_deposit = _aave_asset.balanceOf(safe)
-    print(f"{native_asset[0]}:{_native_asset.decimals()}")
-    to_deposit = 100_000 * 10 ** _native_asset.decimals()
+    to_deposit = 100 * 10 ** _native_asset.decimals()
 
     safe.init_aave()
-    safe.aave.deposit(_native_asset, to_deposit)
 
+    # if not enough native assets -> revert
+    # if bal_before_native_asset_deposit < to_deposit:
+    #     mint(
+    #         MintableForkToken._mint_for_testing(
+    #             safe,
+    #         )
+    #     )
+
+    safe.aave.deposit(_native_asset, to_deposit)
     assert _native_asset.balanceOf(safe) == bal_before_native_asset_deposit - to_deposit
     assert _aave_asset.balanceOf(safe) == bal_before_aave_asset_deposit + to_deposit
 
